@@ -116,18 +116,18 @@ outputFile.write("\n")
 # Now the trials
 present_instruction(win, dispsize, "Instruction")
 for i in range (rounds):
-    #if sth goes wrong with the selection rectangle
-    start_pos = 0
-    end_pos = 0
-    pos = 0
+    #if new image no selection rectangle is drawn
+    start_pos = [0, 0]
+    end_pos = [0, 0]
+    pos = [0, 0]
 
     draw_fixation(win, fixation_time)
     resp_on, resp_rk = present_stimuli_day_2(win, dict_filenames[stimuli[i]], key_new, key_old, reminder_1, reminder_2, pos_new, pos_old, presentation_time)
 
-    if i == 0:
-        present_instruction(win, dispsize, "Now the selection rectangle.")
-
-    start_pos, end_pos, pos = selection_rectangle(win, dict_filenames[stimuli[i]])
+    if resp_on[0] == key_old:
+        if i == 0:
+            present_instruction(win, dispsize, "Now the selection rectangle.")
+        start_pos, end_pos, pos = selection_rectangle(win, dict_filenames[stimuli[i]])
 
     if (resp_on[0] == key_old) & (dict_is_target[stimuli[i]] == 1):
         feedback(win, dispsize, "Richtig!", "green", 1)

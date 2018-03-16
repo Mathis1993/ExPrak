@@ -1,5 +1,5 @@
-from psychopy import visual, event, core, logging, gui, data
-import os, sys, random, numpy, csv, time, glob, codecs
+from psychopy import visual, event, core, gui, data
+import os, random, csv
 import pandas as pd
 from Functions import draw_fixation, present_stimuli_day_1, feedback, present_instruction, reminder
 
@@ -10,7 +10,7 @@ path_images = "images/" #image path relative to this file
 file_distractors_day_1 = 'distractors_day_1.xlsx'
 distrFile = pd.read_excel(file_distractors_day_1, sheetname="Tabelle1")
 path_distractors_day_1 = "distractors_day_1/"
-image_test = [100,200,300,400]
+image_test = [100, 200, 300, 400]
 #actual block size - 1 due to 0-based index
 block_size = 99
 key_new = 'lctrl'
@@ -21,6 +21,9 @@ col_tested = 9
 #positions of the reminders for old and new key at the end of each block
 pos_new = [-270, -270]
 pos_old = [270, -270]
+#time interval of fixation cross and image presentation
+fixation_time = 0.01
+presentation_time = 0.01
 
 # Store info about the experiment session
 expName = 'day1'
@@ -118,14 +121,17 @@ outputFile_winner = open(filename + 'winner' + '.csv', 'w')
 outputFile_winner.write("subject, correct")
 outputFile_winner.write("\n")
 count_distractors = 0
+
 # 0 is written in every row at first, then overwritten with 1 for the images that were tested at the end of a block
 tested = 0
 tested_images = []
 present_instruction(win,dispsize,"Welcome instruction")
+
 ## This is a trial
-for i in range(0,440,1):
-    draw_fixation(win, 0.01)
-    present_stimuli_day_1(win,dict_filenames[filenames[i]],0.01)
+for i in range(0,rounds_experiment,1):
+    draw_fixation(win, fixation_time)
+    present_stimuli_day_1(win,dict_filenames[filenames[i]], presentation_time)
+
     #after each block of 100 images, test 2 images
     if i in image_test:
         #random.randint(i-99, i)
@@ -141,8 +147,9 @@ for i in range(0,440,1):
         dict_is_target = {old_image:0, new_image:1}
         random.shuffle(test)
         present_instruction(win, dispsize, "Test at end of block instruction")
+
         for j in range (2):
-            draw_fixation(win, 0.1)
+            draw_fixation(win, fixation_time)
             test[j].draw()
             reminder(win,dispsize,"new",pos_new)
             reminder(win,dispsize,"old",pos_old)
@@ -161,8 +168,11 @@ for i in range(0,440,1):
             outputFile_winner.write("{},{}\n".format(subNum, is_correct))
         present_instruction(win, dispsize, "Continue Encoding Instruction")
     outputFile.write("{},{},{},{},{},{},{},{},{},{}\n".format(subNum, age, gender, nation, occupation, filenames[i], hit_rate[i], memo[i], dict_isTarget[filenames[i]], tested))
+
 present_instruction(win,dispsize,"Thank you Instruction")
+
 win.close()
+
 ## Mark the images that were tested at the end of each block
 r = csv.reader(open(filename + 'out' + '.csv'))
 lines = list(r)
@@ -172,9 +182,4 @@ for index in tested_images:
 #mode 'wb' to prevent empty columns being written
 writer = csv.writer(open(filename + 'out' + '.csv', 'wb'))
 writer.writerows(lines)
-
-# if experiment is canceled before the regular end, manually insert the 1; note: index + 1!
-# doesn't work like this, change it (if core.quit(), the script does not continue until here!)
-for index in tested_images:
-    print(index)
 

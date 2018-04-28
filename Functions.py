@@ -1,5 +1,6 @@
 from psychopy import visual, core, event
 import random
+import math
 
 
 def present_instruction(win, dispsize, instruction):
@@ -91,7 +92,7 @@ def selection_rectangle(win, stim):
     myMouse = event.Mouse()  # will use win by default
 
     # Instantiation of Rectangle that makes up the selection rectangle (invisible at first, s. height and length)
-    rect = visual.Rect(win, width=0, height=0, pos=(0, 0), lineColor="black")
+    rect = visual.Circle(win, radius = 0.5, edges = 32, pos=(0, 0), lineColor="black")
 
     # Instantiate image object
     image = stim
@@ -120,8 +121,8 @@ def selection_rectangle(win, stim):
                 # set starting position
                 start_pos = myMouse.getPos()
                 # make selection rectangle invisible so that after a "n" response the old one isn't displayed for one frame
-                rect.setHeight(0)
-                rect.setWidth(0)
+                rect.setRadius(0)
+                #rect.setWidth(0)
                 # set starting position of selection rectangle (at current size of 1x1 pixel)
                 rect.setPos(start_pos)
                 # draw rectangle and flip window
@@ -137,25 +138,26 @@ def selection_rectangle(win, stim):
             # Update current mouse position every frame
             curr_pos = myMouse.getPos()
             # Take Betrag des Abstandes der Koordinaten to determine width and height of the current rectangle in this frame
-            width = abs(start_pos[0] - curr_pos[0])
-            height = abs(start_pos[1] - curr_pos[1])
+            radius = math.sqrt(abs(start_pos[0] - curr_pos[0]) ** 2 + abs(start_pos[1] - curr_pos[1]) **2)
+            #height = abs(start_pos[1] - curr_pos[1])
             # go from x-start to middle of the rectangle (i.e. position) relative to the value of pos_current in this frame
-            position = [start_pos[0] + 0.5 * (curr_pos[0] - start_pos[0]),
-                        start_pos[1] + 0.5 * (curr_pos[1] - start_pos[1])]
+            #position = [start_pos[0] + 0.5 * (curr_pos[0] - start_pos[0]),
+            #            start_pos[1] + 0.5 * (curr_pos[1] - start_pos[1])]
             # update rectangle
-            rect.setWidth(width)
-            rect.setHeight(height)
-            rect.setPos(position)
+            rect.setRadius(radius)
+            #rect.setHeight(height)
+            #rect.setPos(position)
             image.draw()
             rect.draw()
             win.flip()
 
         # if left button is released, take end position (also only for one frame and not for every frame thereafter
         if j == 1:
-            end_pos = curr_pos
-            pos = position
+            #end_pos = curr_pos
+            #pos = position
+            end_radius = radius
             # and print it out
-            print(end_pos)
+            print(start_pos, end_radius)
             # wait for response: was that the part of the image the subject wanted to select?
             resp = event.waitKeys(keyList=["y", "n"])
             # if confirmed, exit
@@ -168,4 +170,4 @@ def selection_rectangle(win, stim):
                 i = 0
                 j = 0
 
-    return start_pos, end_pos, pos
+    return start_pos, end_radius

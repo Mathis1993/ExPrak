@@ -110,7 +110,7 @@ reminder_2 = visual.TextStim(win, text="", pos=[0,0],
 
 filename_output = _thisDir + os.sep + 'data' + os.sep + '%s_%s_' %(expInfo['participant'], expName)
 outputFile = open(filename_output + 'out' + '.csv','w')
-outputFile.write("subject,filename,isTarget,correct,rk, start_x, start_y, end_x, end_y, pos_x, pos_y")
+outputFile.write("subject,filename,isTarget,correct,rk, start_x, start_y, radius")
 outputFile.write("\n")
 
 # Now the trials
@@ -127,7 +127,7 @@ for i in range (rounds):
     if resp_on[0] == key_old:
         if i == 0:
             present_instruction(win, dispsize, "Now the selection rectangle.")
-        start_pos, end_pos, pos = selection_rectangle(win, dict_filenames[stimuli[i]])
+        start_pos, end_radius = selection_rectangle(win, dict_filenames[stimuli[i]])
 
     if (resp_on[0] == key_old) & (dict_is_target[stimuli[i]] == 1):
         feedback(win, dispsize, "Richtig!", "green", 1)
@@ -143,7 +143,7 @@ for i in range (rounds):
         rk = "remember"
     elif resp_rk[0] == key_old:
         rk = "know"
-    outputFile.write("{},{},{},{},{},{},{},{},{},{},{}\n".format(subNum, stimuli[i], dict_is_target[stimuli[i]], is_correct, rk, start_pos[0], start_pos[1], end_pos[0], end_pos[1], pos[0], pos[1]))
+    outputFile.write("{},{},{},{},{},{},{},{}\n".format(subNum, stimuli[i], dict_is_target[stimuli[i]], is_correct, rk, start_pos[0], start_pos[1], end_radius))
 
 present_instruction(win,dispsize,"Thank you Instruction")
 

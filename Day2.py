@@ -1,22 +1,40 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from psychopy import visual, core, gui, data
 import os, random, sys
 import pandas as pd
-from Functions import draw_fixation, present_stimuli_day_2, feedback, present_instruction, selection_rectangle
+from Functions import draw_fixation, present_stimuli_day_2, feedback, present_instruction, selection_rectangle, take_break
+
+#instructions
+welcome_instruction = "Willkommen!"
+selection_instruction = "Now the selection circle."
+break_instruktion = "Mach eine kurze Pause! \nWenn du soweit bist, druecke Enter, um weiter zu machen. \nNach drei Minuten geht es automatisch weiter."
+thank_you_instruction = "Thank you Instruction"
+
+#selectio circle color
+color = "red"
 
 file_experiment = 'stimFile.csv' #.xlsx-File mit Infos(memorability etc.)
 expFile = pd.read_csv(file_experiment)
 path_images = "images/"
-file_distractors_day_2 = 'distractors_day_2.xlsx'
-distrFile = pd.read_excel(file_distractors_day_2, sheetname="Tabelle1")
-path_distractors_day_2 = "distractors_day_2/"
-dispsize = [600, 600]
-pos_new = [-270, -270]
-pos_old = [270, -270]
+
+#display
+dispsize = [800, 800]
+
+#reminder positions (old/new, remember/knwo)
+pos_new = [-320, -320]
+pos_old = [320, -320]
+
+#keys
 key_new = 'lctrl'
 key_old = 'rctrl'
+
+#timing
 fixation_time = 0.01
 presentation_time = 0.01
-rounds = 220
+
+rounds = len(expFile['filename'])
 
 # Get the subject number from Day1
 expName = 'day2'
@@ -106,8 +124,10 @@ outputFile = open(filename_output + 'out' + '.csv','w')
 outputFile.write("subject,filename,category,sunfolder,num,hitRate,human,animal,scene_cat,is_odd,memo,set,isTarget,correct,rk, start_x, start_y, radius")
 outputFile.write("\n")
 
+#count if first time selection circle
+k = 0
 # Now the trials
-present_instruction(win, dispsize, "Instruction")
+present_instruction(win,dispsize,welcome_instruction)
 for i in range (rounds):
     #if new image no selection rectangle is drawn
     start_pos = [0, 0]
@@ -119,9 +139,13 @@ for i in range (rounds):
     resp_on, resp_rk = present_stimuli_day_2(win, dict_filenames[filenames[i]], key_new, key_old, reminder_1, reminder_2, pos_new, pos_old, presentation_time)
 
     if resp_on[0] == key_old:
-        if i == 0:
-            present_instruction(win, dispsize, "Now the selection rectangle.")
-        start_pos, end_radius = selection_rectangle(win, dict_filenames[filenames[i]])
+        if k == 0:
+            present_instruction(win, dispsize, selection_instruction)
+            k += 1
+        try:
+            start_pos, end_radius = selection_rectangle(win, dict_filenames[filenames[i]], color)
+        except:
+            start_pos, end_radius = selection_rectangle(win, dict_filenames[filenames[i]], color)
 
     if (resp_on[0] == key_old) & (dict_is_target[filenames[i]] == 1):
         feedback(win, dispsize, "Richtig!", "green", 1)
@@ -137,8 +161,12 @@ for i in range (rounds):
         rk = "remember"
     elif resp_rk[0] == key_old:
         rk = "know"
+
+    if i in [int(1/3.0*rounds), int(2/3.0*rounds)]:
+        take_break(win, dispsize, break_instruktion)
+
     outputFile.write("{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(subNum, filenames[i], category[i], sunfolder[i], num[i], hit_rate[i], human[i], animal[i], scene_cat[i], is_odd[i], memo[i], set[i], dict_is_target[filenames[i]], is_correct, rk, start_pos[0], start_pos[1], end_radius))
 
-present_instruction(win,dispsize,"Thank you Instruction")
+present_instruction(win,dispsize,thank_you_instruction)
 
 win.close()

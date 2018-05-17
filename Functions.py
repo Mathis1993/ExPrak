@@ -87,12 +87,13 @@ def present_stimuli_day_2(win, stimulus, key_new, key_old, reminder_1, reminder_
     return resp_on, resp_rk
 
 
-def selection_rectangle(win, stim):
+def selection_rectangle(win, stim, color):
+    #later: confirm drawn circle with "j", draw new one with "n"
     # Instantiation of event class with mouse method
     myMouse = event.Mouse()  # will use win by default
 
     # Instantiation of Rectangle that makes up the selection rectangle (invisible at first, s. height and length)
-    rect = visual.Circle(win, radius = 0.5, edges = 32, pos=(0, 0), lineColor="black")
+    rect = visual.Circle(win, radius = 0.5, edges = 32, pos=(0, 0), lineColor=color)
 
     # Instantiate image object
     image = stim
@@ -105,7 +106,7 @@ def selection_rectangle(win, stim):
     curr_pos = [0, 0]
 
     # Stop when any keyboard key is pressed
-    while not event.getKeys():
+    while not event.getKeys(keyList=[""]):
         # Poll Mouse Button States (mouse1 is left button)
         mouse1, mouse2, mouse3 = myMouse.getPressed()
         image.draw()
@@ -159,9 +160,9 @@ def selection_rectangle(win, stim):
             # and print it out
             print(start_pos, end_radius)
             # wait for response: was that the part of the image the subject wanted to select?
-            resp = event.waitKeys(keyList=["y", "n"])
+            resp = event.waitKeys(keyList=["j", "n"])
             # if confirmed, exit
-            if resp == ["y"]:
+            if resp == ["j"]:
                 break
                 # win.close()
                 # core.quit()

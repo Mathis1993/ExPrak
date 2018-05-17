@@ -91,9 +91,7 @@ list_of_files = path_images + expFile["filename"]
 #fill list "images"
 for file in list_of_files: #create an image stimulus from each file, and store it in the list
     images.append(visual.ImageStim(win=win, image=file))
-print(type(filenames))
-print(len(images))
-print(len(filenames))
+
 # bind filenames to image stimuli
 dict_filenames = {}
 for i in range(len(filenames)):

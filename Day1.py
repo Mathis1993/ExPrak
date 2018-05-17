@@ -1,13 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from psychopy import visual, event, core, gui, data
 import os, random, csv
 import pandas as pd
-from Functions import draw_fixation, present_stimuli_day_1, feedback, present_instruction, reminder
+from Functions import draw_fixation, present_stimuli_day_1, feedback, present_instruction, reminder, take_break
 
 #instructions
 welcome_instruction = "Welcome Instruction"
 thank_you_instruction = "Thank you Instruction"
 continue_encoding_instruction = "Continue Encoding Instruction"
 end_of_block_instruction = "Test at end of block instruction"
+break_instruction = "Mach eine kurze Pause! \nWenn du soweit bist, druecke Enter, um weiter zu machen. \nNach drei Minuten geht es automatisch weiter!"
 
 #Display
 dispsize = [600, 600]
@@ -28,11 +32,11 @@ file_distractors_day_1 = 'distractors_day_1.xlsx'
 distrFile = pd.read_excel(file_distractors_day_1, sheetname="Tabelle1")
 path_distractors_day_1 = "distractors_day_1/"
 #block runs over all 400 images, but only 200 will be shown; iterator nonetheless counts up to 400
-image_test = [200, 400]
+image_test = [59, 119]
 #actual block size - 1 due to 0-based index
 block_size = 99
 #column in the output file containing info about whether an image was tested at the end of one block
-col_tested = 9
+col_tested = 16
 #positions of the reminders for old and new key at the end of each block
 #time interval of fixation cross and image presentation
 fixation_time = 0.01
@@ -80,14 +84,16 @@ rounds_experiment = len(expFile['filename'])
 #Create empty image list to hold the stimuli
 images = []
 #Variable to bind Filenames to stimuli
-filenames = expFile["filename"]
+filenames = list(expFile["filename"])
 #list of filenames with path relative to this file
 list_of_files = path_images + expFile["filename"]
 
 #fill list "images"
 for file in list_of_files: #create an image stimulus from each file, and store it in the list
     images.append(visual.ImageStim(win=win, image=file))
-
+print(type(filenames))
+print(len(images))
+print(len(filenames))
 # bind filenames to image stimuli
 dict_filenames = {}
 for i in range(len(filenames)):
@@ -128,10 +134,13 @@ tested_images = []
 present_instruction(win,dispsize,welcome_instruction)
 
 ## This is a trial
+# only 2 times so after the second time we dont need the continue encoding instruction
+#k = 0
 for i in range(0,rounds_experiment,1):
     draw_fixation(win, fixation_time)
     present_stimuli_day_1(win,dict_filenames[filenames[i]], presentation_time)
 
+    '''
     #after each block of 100 images, test 2 images
     if i in image_test:
         #random.randint(i-99, i)
@@ -166,13 +175,20 @@ for i in range(0,rounds_experiment,1):
                 feedback(win,dispsize,"Falsch!", "red",1)
                 is_correct = 0
             outputFile_winner.write("{},{}\n".format(subNum, is_correct))
-        present_instruction(win, dispsize, continue_encoding_instruction)
+        if k == 0:
+            present_instruction(win, dispsize, continue_encoding_instruction)
+        k += 1
+        '''
+    # break after half of the trials
+    if i == rounds_experiment/2:
+        take_break(win, dispsize, break_instruction)
     outputFile.write("{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(subNum, age, gender, nation, occupation, filenames[i], category[i], sunfolder[i], num[i], hit_rate[i], human[i], animal[i], scene_cat[i], is_odd[i], memo[i], set[i], tested))
 
 present_instruction(win,dispsize, thank_you_instruction)
 
 win.close()
 
+'''
 ## Mark the images that were tested at the end of each block
 r = csv.reader(open(filename + 'out' + '.csv'))
 lines = list(r)
@@ -182,4 +198,4 @@ for index in tested_images:
 #mode 'wb' to prevent empty columns being written
 writer = csv.writer(open(filename + 'out' + '.csv', 'wb'))
 writer.writerows(lines)
-
+'''

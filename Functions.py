@@ -171,3 +171,16 @@ def selection_rectangle(win, stim):
                 j = 0
 
     return start_pos, end_radius
+
+def take_break(win, dispsize, text):
+    takeBreak = visual.TextStim(
+            win,
+            text=text,
+            color="black",
+            font="Arial",
+            height=30,
+            wrapWidth=int(0.8*dispsize[0])
+        )
+    takeBreak.draw()
+    win.flip()
+    event.waitKeys(maxWait=180, keyList=['return'])

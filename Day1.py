@@ -3,24 +3,37 @@ import os, random, csv
 import pandas as pd
 from Functions import draw_fixation, present_stimuli_day_1, feedback, present_instruction, reminder
 
-file_experiment = 'images.xlsx' #.xlsx-File mit Infos(memorability etc.)
-expFile = pd.read_excel(file_experiment, sheetname="Tabelle1")
-rounds_experiment = len(expFile['filename'])
+#instructions
+welcome_instruction = "Welcome Instruction"
+thank_you_instruction = "Thank you Instruction"
+continue_encoding_instruction = "Continue Encoding Instruction"
+end_of_block_instruction = "Test at end of block instruction"
+
+#Display
+dispsize = [600, 600]
+
+#positions
+pos_new = [-270, -270]
+pos_old = [270, -270]
+
+#keys
+key_new = 'lctrl'
+key_old = 'rctrl'
+
+
+file_experiment = 'stimFile.csv' #.xlsx-File mit Infos(memorability etc.)
+expFile = pd.read_csv(file_experiment)
 path_images = "images/" #image path relative to this file
 file_distractors_day_1 = 'distractors_day_1.xlsx'
 distrFile = pd.read_excel(file_distractors_day_1, sheetname="Tabelle1")
 path_distractors_day_1 = "distractors_day_1/"
-image_test = [100, 200, 300, 400]
+#block runs over all 400 images, but only 200 will be shown; iterator nonetheless counts up to 400
+image_test = [200, 400]
 #actual block size - 1 due to 0-based index
 block_size = 99
-key_new = 'lctrl'
-key_old = 'rctrl'
-dispsize = [600, 600]
 #column in the output file containing info about whether an image was tested at the end of one block
 col_tested = 9
 #positions of the reminders for old and new key at the end of each block
-pos_new = [-270, -270]
-pos_old = [270, -270]
 #time interval of fixation cross and image presentation
 fixation_time = 0.01
 presentation_time = 0.01
@@ -55,6 +68,14 @@ win = visual.Window(
     color=[1, 1, 1]
 )
 
+#Images with set == 1 are targets for subjects with an uneven number, == 2 for subjects with an even number
+if (int(subNum) % 2 == 0):
+    expFile = expFile.loc[expFile['set']==2]
+else:
+    expFile = expFile.loc[expFile['set'] == 1]
+
+rounds_experiment = len(expFile['filename'])
+
 ##Preload Images
 #Create empty image list to hold the stimuli
 images = []
@@ -72,36 +93,6 @@ dict_filenames = {}
 for i in range(len(filenames)):
    dict_filenames.update({filenames[i]: images[i]})
 
-##determine which stimuli are targets (balanced for subjects)
-#Before doing so, sort
-memo = expFile['memo']
-memo_l = []
-memo_h = []
-for i in range(len(filenames)):
-    if memo[i] == "low":
-        memo_l.append(filenames[i])
-    elif memo[i] == "high":
-        memo_h.append(filenames[i])
-#for even subject-numbers, the first half will be targets, the second half distractors
-#for uneven subject-numbers, the first half will be distractors, the second half will be targets
-dict_isTarget = {}
-for i in range (len(memo_l)):
-    if (int(subNum) % 2 == 0):
-        #< and not <= due to 0-based index
-        if i < len(memo_l)/2:
-            dict_isTarget.update({memo_l[i]:1})
-            dict_isTarget.update({memo_h[i]:1})
-        else:
-            dict_isTarget.update({memo_l[i]: 0})
-            dict_isTarget.update({memo_h[i]: 0})
-    else:
-        if i < len(memo_l)/2:
-            dict_isTarget.update({memo_l[i]:0})
-            dict_isTarget.update({memo_h[i]:0})
-        else:
-            dict_isTarget.update({memo_l[i]: 1})
-            dict_isTarget.update({memo_h[i]: 1})
-
 ##Preload distractor images for test after each block
 distractors = path_distractors_day_1 + distrFile['stimuli']
 random.shuffle(distractors)
@@ -110,12 +101,21 @@ for file in distractors:
     new_images.append(visual.ImageStim(win=win, image=file))
 
 ##Shuffle stimuli and open output files in preparation of trials
+category = expFile['category']
+sunfolder = expFile['SUNfolder']
+num = expFile['num']
 hit_rate = expFile['hitRate']
-all_info = zip(filenames, hit_rate, memo)
+human = expFile['human']
+animal = expFile['animal']
+scene_cat = expFile['sceneCat']
+is_odd = expFile['isOdd']
+memo = expFile['memo']
+set = expFile['set']
+all_info = zip(filenames, category, sunfolder, num, hit_rate, human, animal, scene_cat, is_odd, memo, set)
 random.shuffle(all_info)
-filenames, hit_rate, memo = zip(*all_info)
+filenames, category, sunfolder, num, hit_rate, human, animal, scene_cat, is_odd, memo, set = zip(*all_info)
 outputFile = open(filename + 'out' + '.csv','w')
-outputFile.write("subject,age,gender,nation,occupation,filename,hitRate,memo,isTarget,tested")
+outputFile.write("subject,age,gender,nation,occupation,filename,category,sunfolder,num,hitRate,human,animal,scene_cat,is_odd,memo,set,tested")
 outputFile.write("\n")
 outputFile_winner = open(filename + 'winner' + '.csv', 'w')
 outputFile_winner.write("subject, correct")
@@ -125,7 +125,7 @@ count_distractors = 0
 # 0 is written in every row at first, then overwritten with 1 for the images that were tested at the end of a block
 tested = 0
 tested_images = []
-present_instruction(win,dispsize,"Welcome instruction")
+present_instruction(win,dispsize,welcome_instruction)
 
 ## This is a trial
 for i in range(0,rounds_experiment,1):
@@ -146,7 +146,7 @@ for i in range(0,rounds_experiment,1):
         test = [old_image, new_image]
         dict_is_target = {old_image:0, new_image:1}
         random.shuffle(test)
-        present_instruction(win, dispsize, "Test at end of block instruction")
+        present_instruction(win, dispsize, end_of_block_instruction)
 
         for j in range (2):
             draw_fixation(win, fixation_time)
@@ -166,10 +166,10 @@ for i in range(0,rounds_experiment,1):
                 feedback(win,dispsize,"Falsch!", "red",1)
                 is_correct = 0
             outputFile_winner.write("{},{}\n".format(subNum, is_correct))
-        present_instruction(win, dispsize, "Continue Encoding Instruction")
-    outputFile.write("{},{},{},{},{},{},{},{},{},{}\n".format(subNum, age, gender, nation, occupation, filenames[i], hit_rate[i], memo[i], dict_isTarget[filenames[i]], tested))
+        present_instruction(win, dispsize, continue_encoding_instruction)
+    outputFile.write("{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(subNum, age, gender, nation, occupation, filenames[i], category[i], sunfolder[i], num[i], hit_rate[i], human[i], animal[i], scene_cat[i], is_odd[i], memo[i], set[i], tested))
 
-present_instruction(win,dispsize,"Thank you Instruction")
+present_instruction(win,dispsize, thank_you_instruction)
 
 win.close()
 

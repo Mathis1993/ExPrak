@@ -1,5 +1,5 @@
 # Paradigma
-Paradigma für das FoPra
+Experimentelles Paradigma für das Seminar "Experimentelles Forschungspraktikum"
 
 ### Stimuli
 

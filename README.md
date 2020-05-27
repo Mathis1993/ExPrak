@@ -8,6 +8,7 @@ Paradigma für das FoPra
 - 1 Distractor Day2 (Die müssen natürlich noch aufgefüllt werden, hatte aber keine weiteren Bilder)
 
 -------------------Ablauf------------------
+
 Probanden sehen eine Abfolge von Bildern, die sie sich einprägen sollen. Nach jedem Block müssen sie für ein in diesem Block gesehendes und ein neues Bild entscheiden, ob das Bild neu ist oder aus dem gerade betrachteten Block stammt. Einen Tag später wird eine Hälfte dieser Bilder erneut gezeigt, mit ebenso vielen Fillern. Hier muss entschieden werden, ob ein Bild alt oder neu ist und ein Remember-/Know-Judgement abgegeben werden. Danach soll per Selection Rectangle markiert werden, welcher Bildbereich zur Erinnerung geführt hat (Wenn das Bild für ein bereits gesehendes gehalten wird). Dann gibt es Feedback über die alt-/neu-Entscheidung.
 
 - Day1: Enkodierung. Ausbalanciert, welche Hälfte der Bilder Targets ist nach Subject Number. Außderdem ausbalacniert nach high/low memo. Bilder, die für den Test am Ende jedes Blocks genutzt wurden, werden im Output entsprechend markiert.

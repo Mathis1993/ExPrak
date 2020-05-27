@@ -1,4 +1,4 @@
-# Paradigma
+# ExPrak
 Experimentelles Paradigma für das Seminar "Experimentelles Forschungspraktikum"
 
 ### Stimuli
